@@ -5,11 +5,11 @@ from email.mime.text import MIMEText
 
 #sendemail("Soggetto email", "<h1>Titolo</h1><p>paragrafo1</p><p>paragrafo2</p>", "lucalalabro78@gmail.com", "luca.calabro@unimib.it")
 #subject: soggetto email
-#*lista destinatari: tupla di strighe composte da indirizzzi email es: a@a.it, b@b.it o (a@a.it, b@b.it)
+#*lista destinatari bcc: tupla di strighe composte da indirizzzi email es: a@a.it, b@b.it o (a@a.it, b@b.it)
 #body: corpo in formato html
 #From: Campo nell'header della email () sembra non avere peso,  si può eventualemtne lasciare vuoto
 #To: Campo nell'header della email, si può eventualemtne lasciare vuoto
-def sendemail(subject, body, *lista_destinatari):
+def sendemail(subject, body,To, From, *lista_destinatari):
 
 
 
