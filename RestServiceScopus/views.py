@@ -23,28 +23,3 @@ def scopusrequestbydoi(request, doi):
     else:
         return JsonResponse(response_json, safe=False)
 
-
-
-# destinatari può essere una lista o una singola stringa di email
-# body è il corpo della email in html
-def f(destinatari, soggetto, body):
-    import smtplib
-    # contenuto = f'From: From Person Subject: {soggetto}\n\n{body}'
-    contenuto = f"""From: From Person
-        To: To Person
-        MIME-Version: 1.0
-        Content-type: text/html
-        Subject: {soggetto}
-
-        {body}
-        """
-
-    mail = smtplib.SMTP('smtp.gmail.com', 587)  # questa configurazione funziona per gmail
-    mail.ehlo()  # protocollo per extended SMTP
-    mail.starttls()  # email criptata
-    mail.login("serviziwebsi@unimib.it", "?sciliam*15")
-    mail.sendmail('serviziwebsi@unimib.it', destinatari, contenuto)
-    mail.close()
-
-
-
