@@ -1,0 +1,378 @@
+http://127.0.0.1:8000/accounts/logout (account richiamato per il logout)
+
+http://127.0.0.1:8000/accounts/google/login/ (account richiamato per il login)
+
+http://127.0.0.1:8000/altrapagina (richiede login)
+
+http://127.0.0.1:8000/paginanonloggata (non richiede autenticazione)
+
+http://127.0.0.1:8000/ (homepage, richiede autenticazione)
+
+
+
+
+********************************************************************************
+http://127.0.0.1:8000/admin/ (login superuser)
+username: admin
+password: admin.
+********************************************************************************
+
+
+<div class="navbar-collapse collapse">
+  <div class="navbar-form navbar-right">
+    {% if user.is_authenticated %}
+      <a id="logout" href="/accounts/logout" class="btn btn-success">Logout</a>
+    {% else %} 
+      <a id="google_login" href="/accounts/google/login" class="btn btn-success">
+        Sign in with Google
+      </a>
+    {% endif %}
+  </div>
+</div><!--/.navbar-collapse -->
+
+
+
+*******************************
+
+//https://equipe.si.unimib.it/equipe-web/webresources/ActionFormsRu/email/serviziwebsi@unimib.it
+
+var userName = "forms";
+var passWord = "yg7dpwn0.pdk69gn";
+var urlStudent = ["https://equipe.si.unimib.it/equipe-web/webresources/ActionFormsStudente/matricola/"
+                  ,"https://equipe.si.unimib.it/equipe-web/webresources/ActionFormsStudente/codFis/"
+                  ,"https://equipe.si.unimib.it/equipe-web/webresources/ActionFormsStudente/emailAte/"];
+var urlEmployee = ["https://equipe.si.unimib.it/equipe-web/webresources/ActionFormsRu/matricola/"
+                   ,"https://equipe.si.unimib.it/equipe-web/webresources/ActionFormsRu/codFis/"
+                   ,"https://equipe.si.unimib.it/equipe-web/webresources/ActionFormsRu/email/"];
+
+var headers =
+{
+  "Authorization" : "Basic " + Utilities.base64Encode(userName + ':' + passWord)
+};
+
+var params =
+{
+//  "method":"GET",
+  "headers":headers
+};
+
+/* -------------------- -------------------- -------------------- -------------------- -------------------- */
+
+function extractLatestStudentData_(data)
+{
+  var latestStudentData =
+      {
+        userOrganizationIdentifier: "",
+        citizenID: "",
+        eMail: "",
+        surName: "",
+        foreName: "",
+        userOrganization: "",
+      };
+
+  if((data === null) || (data.length === 0))
+  {
+    return latestStudentData;
+  }
+
+  var maxMaxAaIscrIdIndex = -1;
+  var maxMaxAaIscrIdValue = -1;
+  for(var i = data.length-1; i >= 0; i--)
+  {
+//    if((maxMaxAaIscrIdValue <= data[i].maxAaIscrId)
+    if((maxMaxAaIscrIdValue <= data[i].aaIscrId) &&
+       ((data[i].staStuCod !== null)    && (data[i].staStuCod !== "")    && (data[i].staStuCod == "A")) &&
+       ((data[i].tipoCorsoCod !== null) && (data[i].tipoCorsoCod !== "") && (data[i].tipoCorsoCod.charAt(0) === "L")))
+    {
+      maxMaxAaIscrIdIndex = i;
+      maxMaxAaIscrIdValue = data[i].aaIscrId;
+//      maxMaxAaIscrIdValue = data[i].maxAaIscrId;
+    }
+  }
+
+  if(maxMaxAaIscrIdIndex < 0) return latestStudentData;
+
+  latestStudentData.citizenID = data[maxMaxAaIscrIdIndex].codFis;
+  latestStudentData.eMail = data[maxMaxAaIscrIdIndex].emailAte;
+  latestStudentData.surName = data[maxMaxAaIscrIdIndex].cognome;
+  latestStudentData.foreName = data[maxMaxAaIscrIdIndex].nome;
+  latestStudentData.userOrganization = data[maxMaxAaIscrIdIndex].cdsDes;
+  latestStudentData.userOrganizationIdentifier = data[maxMaxAaIscrIdIndex].matricola;
+
+console.log(latestStudentData);
+  return latestStudentData;
+}
+
+/* -------------------- -------------------- -------------------- -------------------- -------------------- */
+
+function extractLatestEmployeeData_(userData)
+{
+  if((userData === null) || (userData.length === 0)) return null;
+
+  var retData =
+  {
+    surName: userData[0].cognome,
+    foreName: userData[0].nome,
+    eMail: userData[0].email,
+    citizenID: userData[0].codFis,
+    userOrganization: userData[0].dsAffOrg,
+    userOrganizationIdentifier: userData[0].matricola,
+    phone: userData[0].tfu,
+    cdRuolo : userData[0].cdRuolo
+  };
+//console.log(retData);
+  return retData;
+}
+
+/* -------------------- -------------------- -------------------- -------------------- -------------------- */
+
+function getUserIDType_(userIdentifier)
+{
+  var userCategory = [-1, -1];
+/*  [-1=error|0=matricola|1=codiceFiscale|2=eMail, -1=error|0=student|1=employee]
+*/
+
+  if((userIdentifier === null) || (userIdentifier === ""))
+      return userCategory;
+  else if(((/^\d+$/).test(userIdentifier)) && (userIdentifier.length == 6)) // student ID is only digits, 6 characters length
+    userCategory = [0, 0];
+  else if((/^[a-z]+\.[a-z]+[0-9]*@campus.unimib+\.it$/).test(userIdentifier.toLowerCase())) // email @campus.unimib.it
+    userCategory = [2, 0];
+  else if((/^[a-z]+\.[a-z]+[0-9]*@unimib+\.it$/).test(userIdentifier.toLowerCase())) // email @unimib.it
+    userCategory = [2, 1];
+  else if(((/^\d+$/).test(userIdentifier)) && (userIdentifier.length == 4)) // employee ID is only digits, 4 characters length
+    userCategory = [0, 1];
+  else if((/^[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z]$/).test(userIdentifier.toUpperCase())) // codice fiscale is 6 chars + 2 digits + 1 char + 2 digits + 1 char + 3 digits + 1 char
+    userCategory = [1, -1];
+
+  return userCategory;
+}
+
+/* -------------------- -------------------- -------------------- -------------------- -------------------- */
+
+
+function getUserData_(userID, userType)
+{
+  var data = null;
+  var userCategory = getUserIDType_(userID);
+
+  if((userType !== null) && (userType !== ""))
+  {
+    if(userType === "studente") userCategory[0][1] = 0; // override to "student" type because of explicit choice in GUI
+    else if (userType === "dipendente") userCategory[0][1] = 1; // override to "employee" type because of explicit choice in GUI
+  }
+
+  var userURL = null;
+  if(userCategory == 2) userID = userID.toUpperCase(); // codice fiscale needs to be uppercase
+  else userID = userID.toLowerCase(); // email address (and other IDs) needs to be lowercase
+
+  if(userCategory[1] === 0) userURL = urlStudent;
+  else if(userCategory[1] === 1) userURL = urlEmployee;
+  else console.log("error user type");
+
+  if((userCategory[1] >= 0)&&(userCategory[1] <= 1))
+  {
+    try
+    {
+      if ((userCategory[0][1] = 1) && (userID.length < 5)) userID = '00' + userID;
+console.log(userURL[userCategory[0]] + userID);
+      var response = UrlFetchApp.fetch(userURL[userCategory[0]] + userID, params); // given the type if ID, calls appropriate JSON URL
+////////////      var response = UrlFetchApp.fetch(userURL['https://equipe.si.unimib.it/equipe-web/webresources/ActionFormsRu/email/' + userID, params); // given the type if ID, calls appropriate JSON URL
+      data = JSON.parse(response.getContentText());
+    }
+    catch(exception)
+    {
+      console.log("web service error");
+      console.log(exception);
+    }
+  }
+
+  /*
+  if(userCategory[1]===0) data = extractLatestStudentData_(data);
+  else if(userCategory[1]===1) data = extractLatestEmployeeData_(data);
+  */
+  return data;
+}
+
+/* -------------------- -------------------- -------------------- -------------------- -------------------- */
+
+
+//https://equipe.si.unimib.it/equipe-web/webresources/ActionFormsRu/email/serviziwebsi@unimib.it
+
+var userName = "forms";
+var passWord = "yg7dpwn0.pdk69gn";
+var urlStudent = ["https://equipe.si.unimib.it/equipe-web/webresources/ActionFormsStudente/matricola/"
+                  ,"https://equipe.si.unimib.it/equipe-web/webresources/ActionFormsStudente/codFis/"
+                  ,"https://equipe.si.unimib.it/equipe-web/webresources/ActionFormsStudente/emailAte/"];
+var urlEmployee = ["https://equipe.si.unimib.it/equipe-web/webresources/ActionFormsRu/matricola/"
+                   ,"https://equipe.si.unimib.it/equipe-web/webresources/ActionFormsRu/codFis/"
+                   ,"https://equipe.si.unimib.it/equipe-web/webresources/ActionFormsRu/email/"];
+
+var headers =
+{
+  "Authorization" : "Basic " + Utilities.base64Encode(userName + ':' + passWord)
+};
+
+var params =
+{
+//  "method":"GET",
+  "headers":headers
+};
+
+/* -------------------- -------------------- -------------------- -------------------- -------------------- */
+
+function extractLatestStudentData_(data)
+{
+  var latestStudentData =
+      {
+        userOrganizationIdentifier: "",
+        citizenID: "",
+        eMail: "",
+        surName: "",
+        foreName: "",
+        userOrganization: "",
+      };
+
+  if((data === null) || (data.length === 0))
+  {
+    return latestStudentData;
+  }
+
+  var maxMaxAaIscrIdIndex = -1;
+  var maxMaxAaIscrIdValue = -1;
+  for(var i = data.length-1; i >= 0; i--)
+  {
+//    if((maxMaxAaIscrIdValue <= data[i].maxAaIscrId)
+    if((maxMaxAaIscrIdValue <= data[i].aaIscrId) &&
+       ((data[i].staStuCod !== null)    && (data[i].staStuCod !== "")    && (data[i].staStuCod == "A")) &&
+       ((data[i].tipoCorsoCod !== null) && (data[i].tipoCorsoCod !== "") && (data[i].tipoCorsoCod.charAt(0) === "L")))
+    {
+      maxMaxAaIscrIdIndex = i;
+      maxMaxAaIscrIdValue = data[i].aaIscrId;
+//      maxMaxAaIscrIdValue = data[i].maxAaIscrId;
+    }
+  }
+
+  if(maxMaxAaIscrIdIndex < 0) return latestStudentData;
+
+  latestStudentData.citizenID = data[maxMaxAaIscrIdIndex].codFis;
+  latestStudentData.eMail = data[maxMaxAaIscrIdIndex].emailAte;
+  latestStudentData.surName = data[maxMaxAaIscrIdIndex].cognome;
+  latestStudentData.foreName = data[maxMaxAaIscrIdIndex].nome;
+  latestStudentData.userOrganization = data[maxMaxAaIscrIdIndex].cdsDes;
+  latestStudentData.userOrganizationIdentifier = data[maxMaxAaIscrIdIndex].matricola;
+
+console.log(latestStudentData);
+  return latestStudentData;
+}
+
+/* -------------------- -------------------- -------------------- -------------------- -------------------- */
+
+function extractLatestEmployeeData_(userData)
+{
+  if((userData === null) || (userData.length === 0)) return null;
+
+  var retData =
+  {
+    surName: userData[0].cognome,
+    foreName: userData[0].nome,
+    eMail: userData[0].email,
+    citizenID: userData[0].codFis,
+    userOrganization: userData[0].dsAffOrg,
+    userOrganizationIdentifier: userData[0].matricola,
+    phone: userData[0].tfu,
+    cdRuolo : userData[0].cdRuolo
+  };
+//console.log(retData);
+  return retData;
+}
+
+/* -------------------- -------------------- -------------------- -------------------- -------------------- */
+
+function getUserIDType_(userIdentifier)
+{
+  var userCategory = [-1, -1];
+/*  [-1=error|0=matricola|1=codiceFiscale|2=eMail, -1=error|0=student|1=employee]
+*/
+
+  if((userIdentifier === null) || (userIdentifier === ""))
+      return userCategory;
+  else if(((/^\d+$/).test(userIdentifier)) && (userIdentifier.length == 6)) // student ID is only digits, 6 characters length
+    userCategory = [0, 0];
+  else if((/^[a-z]+\.[a-z]+[0-9]*@campus.unimib+\.it$/).test(userIdentifier.toLowerCase())) // email @campus.unimib.it
+    userCategory = [2, 0];
+  else if((/^[a-z]+\.[a-z]+[0-9]*@unimib+\.it$/).test(userIdentifier.toLowerCase())) // email @unimib.it
+    userCategory = [2, 1];
+  else if(((/^\d+$/).test(userIdentifier)) && (userIdentifier.length == 4)) // employee ID is only digits, 4 characters length
+    userCategory = [0, 1];
+  else if((/^[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z]$/).test(userIdentifier.toUpperCase())) // codice fiscale is 6 chars + 2 digits + 1 char + 2 digits + 1 char + 3 digits + 1 char
+    userCategory = [1, -1];
+
+  return userCategory;
+}
+
+/* -------------------- -------------------- -------------------- -------------------- -------------------- */
+
+
+function getUserData_(userID, userType)
+{
+  var data = null;
+  var userCategory = getUserIDType_(userID);
+
+  if((userType !== null) && (userType !== ""))
+  {
+    if(userType === "studente") userCategory[0][1] = 0; // override to "student" type because of explicit choice in GUI
+    else if (userType === "dipendente") userCategory[0][1] = 1; // override to "employee" type because of explicit choice in GUI
+  }
+
+  var userURL = null;
+  if(userCategory == 2) userID = userID.toUpperCase(); // codice fiscale needs to be uppercase
+  else userID = userID.toLowerCase(); // email address (and other IDs) needs to be lowercase
+
+  if(userCategory[1] === 0) userURL = urlStudent;
+  else if(userCategory[1] === 1) userURL = urlEmployee;
+  else console.log("error user type");
+
+  if((userCategory[1] >= 0)&&(userCategory[1] <= 1))
+  {
+    try
+    {
+      if ((userCategory[0][1] = 1) && (userID.length < 5)) userID = '00' + userID;
+console.log(userURL[userCategory[0]] + userID);
+      var response = UrlFetchApp.fetch(userURL[userCategory[0]] + userID, params); // given the type if ID, calls appropriate JSON URL
+////////////      var response = UrlFetchApp.fetch(userURL['https://equipe.si.unimib.it/equipe-web/webresources/ActionFormsRu/email/' + userID, params); // given the type if ID, calls appropriate JSON URL
+      data = JSON.parse(response.getContentText());
+    }
+    catch(exception)
+    {
+      console.log("web service error");
+      console.log(exception);
+    }
+  }
+
+  /*
+  if(userCategory[1]===0) data = extractLatestStudentData_(data);
+  else if(userCategory[1]===1) data = extractLatestEmployeeData_(data);
+  */
+  return data;
+}
+
+/* -------------------- -------------------- -------------------- -------------------- -------------------- */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
