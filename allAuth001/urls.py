@@ -19,6 +19,7 @@ from django.views.generic import TemplateView
 from social_app.views import verified_users_only_view, not_logged_view
 from RestServiceEsse3.views import testRest, studentematricola, studentecodicefiscale, studenteemail, utentematricola, \
     utentecodicefiscale, utenteemail
+from GDriveApp.views import model_form_upload
 
 from RestServiceScopus.views import scopusrequestbydoi
 
@@ -29,18 +30,22 @@ urlpatterns = [
     path('altrapagina/', verified_users_only_view),  # <--
     path('paginanonloggata/', not_logged_view),  # <--
 
-    #Metodi per richiamare rest service esse3
+    # Metodi per richiamare rest service esse3
     path('restserviceesse3/testrest', testRest, name="testrest"),  # <--
     path('restserviceesse3/studentematricola/<str:matricola>/', studentematricola, name="studentematricola"),  # <--
-    path('restserviceesse3/studentecodicefiscale/<str:codicefiscale>/', studentecodicefiscale, name="studentecodicefiscale"),  # <--
+    path('restserviceesse3/studentecodicefiscale/<str:codicefiscale>/', studentecodicefiscale,
+         name="studentecodicefiscale"),  # <--
     path('restserviceesse3/studenteemail/<str:email>/', studenteemail, name="studenteemail"),  # <--
     path('restserviceesse3/utentematricola/<str:matricola>/', utentematricola, name="utentematricola"),  # <--
-    path('restserviceesse3/utentecodicefiscale/<str:codicefiscale>/', utentecodicefiscale, name="utentecodicefiscale"),  # <--
+    path('restserviceesse3/utentecodicefiscale/<str:codicefiscale>/', utentecodicefiscale, name="utentecodicefiscale"),
+    # <--
     path('restserviceesse3/utenteemail/<str:email>/', utenteemail, name="utenteemail"),  # <--
 
-    #Metodi per richiamare rest scopus
+    # Metodi per richiamare rest scopus
     path('restservicescopus/scopusrequestbydoi/<path:doi>/', scopusrequestbydoi, name="scopusrequestbydoi"),  # <--
 
+    # Metodo per caricare file
+    path('gdriveapp/uploadfile/', model_form_upload, name="uploadfile"),  # <--
 
 
 

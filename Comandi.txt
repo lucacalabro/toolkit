@@ -8,6 +8,9 @@ http://127.0.0.1:8000/paginanonloggata (non richiede autenticazione)
 
 http://127.0.0.1:8000/ (homepage, richiede autenticazione)
 
+http://127.0.0.1:8000/gdriveapp/uploadfile/ (uploadfile)
+http://127.0.0.1:8000/gdriveapp/uploadfiletogdrive/ (uploadfiletogdrive)
+
 
 
 
